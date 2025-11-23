@@ -1,9 +1,20 @@
 from dotenv import load_dotenv
-load_dotenv()
-
+import os
 import streamlit as st
+
+# スクリプトのディレクトリを基準にapi.envを読み込む
+script_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(script_dir, 'api.env')
+load_dotenv(env_path)
+
 from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
+
+# 環境変数の確認
+api_key = os.getenv('OPENAI_API_KEY')
+if not api_key:
+    st.error(f"OPENAI_API_KEYが設定されていません。{env_path}ファイルを確認してください。")
+    st.stop()
 
 # LLMの初期化
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
@@ -19,7 +30,6 @@ def get_llm_response(input_text: str, mode: str) -> str:
     Returns:
         LLMからの回答テキスト
     """
-    # システムメッセージの設定
     if mode == "健康に関する専門家とのチャット":
         system_message = SystemMessage(
             content="あなたは健康と医療に関する専門家です。ユーザーの健康に関する質問に、専門的な知識を用いて丁寧に回答してください。ただし、深刻な症状については医療機関の受診を勧めてください。"
